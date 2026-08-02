@@ -1,0 +1,17 @@
+/**
+ * Image Text Wrap — editor-only tweaks.
+ *
+ * Keeps the block's own wrapper from adding chrome that would throw off the
+ * float preview, so what you see in the canvas closely matches the front end.
+ */
+
+.wp-block[data-type="image-text-wrap/image-text-wrap"] {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* The placeholder (pre-image) state should span the column, not float. */
+.wp-block[data-type="image-text-wrap/image-text-wrap"] .components-placeholder {
+	float: none;
+	width: 100%;
+}

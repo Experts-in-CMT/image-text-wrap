@@ -1,0 +1,149 @@
+/**
+ * Image Text Wrap — shared front-end + editor styles.
+ *
+ * The per-image bits (width, shape-outside, shape-margin, threshold) are set
+ * inline by save(); this file supplies the structural float + the responsive
+ * fallback that the inline styles can't express.
+ */
+
+.image-text-wrap {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	max-width: 100%;
+}
+
+.image-text-wrap img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+/* =========================================================================
+ * BESIDE mode (float / wrap): text runs alongside the image.
+ * ========================================================================= */
+
+/* Rectangle mode: the text-side gap is the box margin. */
+.image-text-wrap.align-left:not( .wrap-stack ) {
+	float: left;
+	margin-right: var( --image-text-wrap-offset, 1rem );
+}
+
+.image-text-wrap.align-right:not( .wrap-stack ) {
+	float: right;
+	margin-left: var( --image-text-wrap-offset, 1rem );
+}
+
+/*
+ * Shape modes (circle / ellipse / contour): the wrap gap comes from
+ * shape-margin (set inline), so zero the box margin on the text side to
+ * avoid doubling the offset.
+ */
+.image-text-wrap.has-shape.align-left {
+	margin-right: 0;
+}
+
+.image-text-wrap.has-shape.align-right {
+	margin-left: 0;
+}
+
+/*
+ * Constrained layout (WordPress default post/page content): the container is
+ * wider than the text column and centers non-aligned blocks with margin:auto.
+ * A float ignores auto margins and escapes to the container's far edge, landing
+ * in the gutter instead of at the content column. Pull it back in by the gutter
+ * so the image lines up with the body text. !important is required because WP
+ * marks the layout's centering margins !important.
+ */
+.is-layout-constrained > .image-text-wrap.align-left:not( .wrap-stack ) {
+	margin-left: max( 0px, calc( ( 100% - var( --wp--style--global--content-size, 1000px ) ) / 2 ) ) !important;
+	margin-right: var( --image-text-wrap-offset, 1rem ) !important;
+}
+
+.is-layout-constrained > .image-text-wrap.align-right:not( .wrap-stack ) {
+	margin-right: max( 0px, calc( ( 100% - var( --wp--style--global--content-size, 1000px ) ) / 2 ) ) !important;
+	margin-left: var( --image-text-wrap-offset, 1rem ) !important;
+}
+
+.is-layout-constrained > .image-text-wrap.has-shape.align-left {
+	margin-right: 0 !important;
+}
+
+.is-layout-constrained > .image-text-wrap.has-shape.align-right {
+	margin-left: 0 !important;
+}
+
+/*
+ * Top-align the wrapping text with the top of the image (beside mode only).
+ * Block themes add a block-gap margin-top to the block that follows the image,
+ * dropping the first text line below the image's top edge. Zero it on the
+ * immediately-following sibling (front end + constrained layout) so the tops meet.
+ */
+.image-text-wrap.align-left:not( .wrap-stack ) + *,
+.image-text-wrap.align-right:not( .wrap-stack ) + *,
+.is-layout-constrained > .image-text-wrap.align-left:not( .wrap-stack ) + *,
+.is-layout-constrained > .image-text-wrap.align-right:not( .wrap-stack ) + * {
+	margin-top: 0 !important;
+}
+
+/* =========================================================================
+ * TOP & BOTTOM mode (stacked / jump): image sits in its own horizontal band;
+ * text stops above it and resumes below — never beside. Position sets where
+ * the image sits within the content column.
+ * ========================================================================= */
+
+.image-text-wrap.wrap-stack {
+	float: none;
+	clear: both;
+	display: block;
+	margin-bottom: 1rem;
+}
+
+.image-text-wrap.wrap-stack.align-left {
+	margin-left: 0;
+	margin-right: auto;
+}
+
+.image-text-wrap.wrap-stack.align-center {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.image-text-wrap.wrap-stack.align-right {
+	margin-left: auto;
+	margin-right: 0;
+}
+
+/* Override the constrained layout's forced margin:auto centering. */
+.is-layout-constrained > .image-text-wrap.wrap-stack.align-left {
+	margin-left: 0 !important;
+	margin-right: auto !important;
+}
+
+.is-layout-constrained > .image-text-wrap.wrap-stack.align-center {
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.is-layout-constrained > .image-text-wrap.wrap-stack.align-right {
+	margin-left: auto !important;
+	margin-right: 0 !important;
+}
+
+/*
+ * Phones: a floated, wrapped image in a very narrow column reads badly, so
+ * below 600px drop to full width — no float, no shape, no offsets. Above this
+ * (tablets, large phones landscape) the float + wrap is kept intentionally.
+ */
+@media ( max-width: 600px ) {
+	.image-text-wrap.align-left:not( .wrap-stack ),
+	.image-text-wrap.align-right:not( .wrap-stack ),
+	.is-layout-constrained > .image-text-wrap.align-left:not( .wrap-stack ),
+	.is-layout-constrained > .image-text-wrap.align-right:not( .wrap-stack ) {
+		float: none !important;
+		width: 100% !important;
+		margin: 0 0 1rem 0 !important;
+		padding: 0 !important;
+		shape-outside: none !important;
+		shape-margin: 0 !important;
+	}
+}

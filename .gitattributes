@@ -1,0 +1,14 @@
+# Normalize all text files to LF in the repo and working tree.
+* text=auto eol=lf
+
+# Treat common binary assets as binary (no EOL munging, no diff).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg text eol=lf
+
+# Keep VCS/config files out of `git archive` release exports.
+/.gitignore export-ignore
+/.gitattributes export-ignore
