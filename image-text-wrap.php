@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Image Text Wrap
  * Description: Adds an Image Text Wrap block that flows body text around an image. Float it, slide it down so text runs above it, and wrap to a box, a circle, or the real cut-out shape of a transparent PNG.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Kenneth Raymond
  * Requires at least: 6.4
  * Requires PHP: 7.4
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'IMAGE_TEXT_WRAP_VER', '1.0.0' );
+define( 'IMAGE_TEXT_WRAP_VER', '1.1.0' );
 
 /**
  * Register scripts/styles, then the block from its block.json.
@@ -84,4 +84,56 @@ add_action( 'init', function () {
 	);
 
 	register_block_type( $dir );
+} );
+
+/**
+ * One-time content migration for the eic-wrap-image -> image-text-wrap rename.
+ *
+ * This block saves static markup, so posts published under the plugin's former
+ * naming have the old block name, CSS class, and offset variable baked into
+ * their saved content. Without this, updating to the renamed plugin would leave
+ * those posts unstyled on the front end and unrecognized in the editor.
+ *
+ * On the first admin load after the update it rewrites, in place, every post
+ * that contains the old block:
+ *   - block name  eic/wrap-image  -> image-text-wrap/image-text-wrap
+ *   - CSS class   eic-wrap-image  -> image-text-wrap
+ *   - offset var  --eic-offset    -> --image-text-wrap-offset
+ *
+ * Guarded by an option so it runs exactly once, and gated to admins so it fires
+ * on a real dashboard load (not an unauthenticated request). Direct DB writes
+ * avoid kses filtering the block HTML and avoid revision spam. Safe to leave in
+ * place permanently — it no-ops once complete.
+ */
+add_action( 'admin_init', function () {
+	if ( get_option( 'image_text_wrap_rename_migrated' ) ) {
+		return;
+	}
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	global $wpdb;
+
+	$ids = $wpdb->get_col(
+		"SELECT ID FROM {$wpdb->posts} WHERE post_content LIKE '%wp:eic/wrap-image%'"
+	);
+
+	$search  = array( 'eic/wrap-image', 'eic-wrap-image', '--eic-offset' );
+	$replace = array( 'image-text-wrap/image-text-wrap', 'image-text-wrap', '--image-text-wrap-offset' );
+
+	foreach ( (array) $ids as $id ) {
+		$id      = (int) $id;
+		$content = get_post_field( 'post_content', $id );
+		if ( ! is_string( $content ) || '' === $content ) {
+			continue;
+		}
+		$updated = str_replace( $search, $replace, $content );
+		if ( $updated !== $content ) {
+			$wpdb->update( $wpdb->posts, array( 'post_content' => $updated ), array( 'ID' => $id ) );
+			clean_post_cache( $id );
+		}
+	}
+
+	update_option( 'image_text_wrap_rename_migrated', 1 );
 } );

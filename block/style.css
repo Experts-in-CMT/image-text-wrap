@@ -18,6 +18,14 @@
 	height: auto;
 }
 
+/* Caption sits below the image, inside the floated figure, at the image's width. */
+.image-text-wrap figcaption {
+	margin-top: 0.5em;
+	font-size: 0.85em;
+	line-height: 1.4;
+	opacity: 0.75;
+}
+
 /* =========================================================================
  * BESIDE mode (float / wrap): text runs alongside the image.
  * ========================================================================= */

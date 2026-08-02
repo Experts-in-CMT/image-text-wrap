@@ -10,6 +10,7 @@
 
 	var el = element.createElement;
 	var Fragment = element.Fragment;
+	var RawHTML = element.RawHTML;
 	var __ = i18n.__;
 
 	var useBlockProps = blockEditor.useBlockProps;
@@ -21,6 +22,7 @@
 	var PanelBody = components.PanelBody;
 	var SelectControl = components.SelectControl;
 	var RangeControl = components.RangeControl;
+	var TextareaControl = components.TextareaControl;
 	var Button = components.Button;
 	var Notice = components.Notice;
 
@@ -35,6 +37,7 @@
 		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
 		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
 		var width = typeof attrs.width === 'number' ? attrs.width : 300;
+		var hasCaption = !! ( attrs.caption && attrs.caption.length );
 
 		// Beside (float) only supports left/right; stacked adds center.
 		var side = attrs.side;
@@ -100,23 +103,29 @@
 			} else {
 				// Offset 0: original per-shape behavior. Markup is unchanged from
 				// before offsetY existed, so older blocks stay valid.
-				classes.push( 'shape-' + shape );
-				if ( shape !== 'rectangle' ) {
+				//
+				// A caption sits below the image inside the figure. The non-rectangular
+				// shapes only carve the image, so text would overlap the caption band.
+				// When a caption is present, fall back to a rectangular (bounding-box)
+				// wrap that includes the caption.
+				var effectiveShape = ( hasCaption && shape !== 'rectangle' ) ? 'rectangle' : shape;
+				classes.push( 'shape-' + effectiveShape );
+				if ( effectiveShape !== 'rectangle' ) {
 					classes.push( 'has-shape' );
 				}
 
 				// Contour wrap: shape-outside reads the image's own alpha channel.
 				// Must be same-origin + have transparency, or it degrades to rectangle.
-				if ( shape === 'contour' && attrs.url ) {
+				if ( effectiveShape === 'contour' && attrs.url ) {
 					style.shapeOutside = 'url("' + attrs.url + '")';
 					style.shapeImageThreshold = String(
 						typeof attrs.threshold === 'number' ? attrs.threshold : 0.5
 					);
 					style.shapeMargin = offset + 'px';
-				} else if ( shape === 'circle' ) {
+				} else if ( effectiveShape === 'circle' ) {
 					style.shapeOutside = 'circle(50%)';
 					style.shapeMargin = offset + 'px';
-				} else if ( shape === 'ellipse' ) {
+				} else if ( effectiveShape === 'ellipse' ) {
 					style.shapeOutside = 'ellipse(50% 50%)';
 					style.shapeMargin = offset + 'px';
 				}
@@ -238,6 +247,12 @@
 					max: 1000,
 					onChange: function ( v ) { setAttributes( { width: v } ); }
 				} ),
+				el( TextareaControl, {
+					label: __( 'Caption', 'image-text-wrap' ),
+					help: __( 'Shown below the image; text wraps around image + caption together. Accepts simple inline HTML: <em>, <strong>, <a href>.', 'image-text-wrap' ),
+					value: attrs.caption,
+					onChange: function ( v ) { setAttributes( { caption: v } ); }
+				} ),
 				attrs.wrapMode !== 'stack' && attrs.shape === 'contour'
 					? el( RangeControl, {
 						label: __( 'Contour tightness (alpha threshold)', 'image-text-wrap' ),
@@ -305,7 +320,13 @@
 			el(
 				'figure',
 				blockProps,
-				el( 'img', { src: attrs.url, alt: attrs.alt } )
+				el( 'img', { src: attrs.url, alt: attrs.alt } ),
+				// Caption is edited in the sidebar; here it's display-only so the
+				// canvas previews how the wrap includes it. RawHTML lets simple
+				// inline markup (em / strong / a) render instead of showing as text.
+				attrs.caption
+					? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
+					: null
 			)
 		);
 	}
@@ -325,7 +346,10 @@
 		return el(
 			'figure',
 			blockProps,
-			el( 'img', { src: attrs.url, alt: attrs.alt || '' } )
+			el( 'img', { src: attrs.url, alt: attrs.alt || '' } ),
+			attrs.caption && attrs.caption.length
+				? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
+				: null
 		);
 	}
 

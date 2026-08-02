@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "image-text-wrap/image-text-wrap",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"title": "Image Text Wrap",
 	"category": "media",
 	"icon": "align-pull-left",
@@ -25,7 +25,8 @@
 		"offset": { "type": "number", "default": 16 },
 		"offsetY": { "type": "number", "default": 0 },
 		"gapY": { "type": "number", "default": 0 },
-		"threshold": { "type": "number", "default": 0.5 }
+		"threshold": { "type": "number", "default": 0.5 },
+		"caption": { "type": "string", "default": "" }
 	},
 	"editorScript": "image-text-wrap-editor",
 	"style": "image-text-wrap-style",
