@@ -4,7 +4,7 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 
 == Changelog ==
 
+= 1.1.1 =
+* Removed the one-time rename migration now that its purpose is complete. No functional change.
+
 = 1.1.0 =
 * Added image captions, edited from the block sidebar and shown below the image. Body text wraps around the image and caption together.
 * Captions accept simple inline HTML (em, strong, a).
@@ -77,6 +80,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 * Responsive: stacks full width below 600px.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Housekeeping release. Removes the one-time migration code; no functional change and no action needed.
 
 = 1.1.0 =
 Adds image captions. Existing content is migrated automatically on first admin load after updating; back up your database first as a precaution.
