@@ -22,6 +22,7 @@ You get real control over the wrap instead of the all-or-nothing float the core 
 * **Vertical gap** adds breathing room above and below the image.
 * **Wrap shape** lets the text hug a plain box, a circle, an ellipse, or the actual silhouette of a transparent PNG (via CSS `shape-outside`).
 * **Top & bottom** mode drops the image into its own band with text above and below only.
+* **Captions** appear below the image, edited from the sidebar, with the body text wrapping around image and caption together. They accept simple inline HTML (em, strong, links).
 
 The block saves as plain HTML with inline styles, so published posts keep rendering even across editor updates. There is no build step and no external dependencies.
 

@@ -12,6 +12,7 @@ No build step, no dependencies, static-save output.
 - **Vertical gap:** breathing room above and below the image.
 - **Wrap shape:** text hugs a box, a circle, an ellipse, or the real silhouette of a transparent PNG (CSS `shape-outside`).
 - **Top & bottom:** drop the image into its own band, text above and below only.
+- **Captions:** add a caption below the image, edited from the sidebar; body text wraps around the image and its caption together. Accepts simple inline HTML (`<em>`, `<strong>`, `<a>`).
 - **Responsive:** stacks full width below 600px so narrow columns never get squeezed.
 - **Durable:** saves as plain HTML with inline styles, so published posts keep rendering across editor updates.
 
@@ -26,6 +27,7 @@ Requires WordPress 6.4+ and PHP 7.4+.
 1. Add the **Image Text Wrap** block to a post and choose an image.
 2. Type your paragraphs *after* the block. That text is what wraps around the image.
 3. Shape the wrap in the block's **Text Wrap** panel (position, vertical offset, vertical gap, wrap offset, shape, display width).
+4. Optionally add a **caption** in the sidebar Caption box. It sits below the image, the body text wraps around both, and it accepts simple inline HTML (`<em>`, `<strong>`, `<a>`).
 
 ## Notes and limitations
 
