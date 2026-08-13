@@ -1,17 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Image Text Wrap icon, Fernwell Grove palette">
-  <rect x="0" y="0" width="256" height="256" rx="52" fill="#f4a860"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 256 256">
+  <!-- Generator: Adobe Illustrator 30.7.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 114)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #0e5244;
+      }
 
-  <!-- image tile -->
-  <rect x="32" y="54" width="84" height="84" rx="13" fill="#0e5244"/>
-  <circle cx="97" cy="76" r="8" fill="#f4a860"/>
-  <polygon points="40,120 62,88 78,106 92,84 108,120" fill="#f4a860"/>
-
-  <!-- text wrapping BESIDE the image -->
-  <rect x="130" y="60"  width="90" height="12" rx="6" fill="#0e5244"/>
-  <rect x="130" y="86"  width="90" height="12" rx="6" fill="#0e5244"/>
-  <rect x="130" y="112" width="90" height="12" rx="6" fill="#0e5244"/>
-
-  <!-- text flowing full-width BELOW the image -->
-  <rect x="32" y="158" width="188" height="12" rx="6" fill="#0e5244"/>
-  <rect x="32" y="182" width="128" height="12" rx="6" fill="#0e5244"/>
+      .st1 {
+        fill: #f4a860;
+      }
+    </style>
+  </defs>
+  <rect class="st1" width="256" height="256" rx="52" ry="52"/>
+  <rect class="st0" x="32" y="54" width="84" height="84" rx="13" ry="13"/>
+  <circle class="st1" cx="97" cy="76" r="8"/>
+  <polygon class="st1" points="40 120 62 88 78 106 92 84 108 120 40 120"/>
+  <path class="st0" d="M136,60h78c3.31,0,6,2.69,6,6h0c0,3.31-2.69,6-6,6h-78c-3.31,0-6-2.69-6-6h0c0-3.31,2.69-6,6-6Z"/>
+  <path class="st0" d="M136,86h78c3.31,0,6,2.69,6,6h0c0,3.31-2.69,6-6,6h-78c-3.31,0-6-2.69-6-6h0c0-3.31,2.69-6,6-6Z"/>
+  <path class="st0" d="M136,112h78c3.31,0,6,2.69,6,6h0c0,3.31-2.69,6-6,6h-78c-3.31,0-6-2.69-6-6h0c0-3.31,2.69-6,6-6Z"/>
+  <path class="st0" d="M38,158h176c3.31,0,6,2.69,6,6h0c0,3.31-2.69,6-6,6H38c-3.31,0-6-2.69-6-6h0c0-3.31,2.69-6,6-6Z"/>
+  <path class="st0" d="M38,182h116c3.31,0,6,2.69,6,6h0c0,3.31-2.69,6-6,6H38c-3.31,0-6-2.69-6-6h0c0-3.31,2.69-6,6-6Z"/>
 </svg>
