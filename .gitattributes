@@ -9,6 +9,8 @@
 *.webp binary
 *.svg text eol=lf
 
-# Keep VCS/config files out of `git archive` release exports.
+# Keep VCS/config files and non-shipping assets out of `git archive` release exports.
 /.gitignore export-ignore
 /.gitattributes export-ignore
+/.wordpress-org/ export-ignore
+/README.md export-ignore
