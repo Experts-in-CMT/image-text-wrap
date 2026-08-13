@@ -1,6 +1,6 @@
 # Image Text Wrap
 
-A WordPress block that wraps body text around an image the way a page-layout program does. Float it, drop it into the copy so text flows above it, and choose how the words hug the edge, right down to the cut-out shape of a transparent PNG.
+A WordPress block that wraps body text around an image the way a page-layout program does. Float it, drop it into the copy so text flows above it, and choose how the words hug the edge.
 
 No build step, no dependencies, static-save output.
 
@@ -10,7 +10,7 @@ No build step, no dependencies, static-save output.
 - **Vertical offset:** slide the image down into the copy so text flows *above* it, then wraps beside and below.
 - **Wrap offset:** the gap between the image and the text on the wrapping side.
 - **Vertical gap:** breathing room above and below the image.
-- **Wrap shape:** text hugs a box, a circle, an ellipse, or the real silhouette of a transparent PNG (CSS `shape-outside`).
+- **Wrap shape:** text hugs a box, a circle, or an ellipse.
 - **Top & bottom:** drop the image into its own band, text above and below only.
 - **Captions:** add a caption below the image, edited from the sidebar; body text wraps around the image and its caption together. Accepts simple inline HTML (`<em>`, `<strong>`, `<a>`).
 - **Responsive:** stacks full width below 600px so narrow columns never get squeezed.
@@ -32,7 +32,6 @@ Requires WordPress 6.4+ and PHP 7.4+.
 ## Notes and limitations
 
 - **Text above the image** comes from the block immediately following the image, so keep a paragraph after it.
-- **Contour (silhouette) wrap** reads the image's alpha channel, so it needs a transparent PNG/WebP served from the same site. Opaque images fall back to a rectangle.
 - **Four-sided wrap** (text hugging both sides of a centered image at once) is not supported. It needs CSS Exclusions, which no current browser ships, so text flows above, below, and on one side.
 
 ## Development

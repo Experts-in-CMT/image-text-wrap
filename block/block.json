@@ -2,12 +2,12 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "image-text-wrap/image-text-wrap",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"title": "Image Text Wrap",
 	"category": "media",
 	"icon": "align-pull-left",
-	"description": "Wrap body text around an image. Float it left or right, slide it down the page so text flows above it, and pick how the words hug the edge: a plain box, a circle or ellipse, or the real cut-out shape of a transparent PNG.",
-	"keywords": [ "image", "wrap", "float", "contour", "text wrap" ],
+	"description": "Wrap body text around an image. Float it left or right, slide it down the page so text flows above it, and pick how the words hug the edge: a plain box, a circle or ellipse.",
+	"keywords": [ "image", "wrap", "float", "text wrap" ],
 	"textdomain": "image-text-wrap",
 	"supports": {
 		"anchor": true,
@@ -25,7 +25,6 @@
 		"offset": { "type": "number", "default": 16 },
 		"offsetY": { "type": "number", "default": 0 },
 		"gapY": { "type": "number", "default": 0 },
-		"threshold": { "type": "number", "default": 0.5 },
 		"caption": { "type": "string", "default": "" }
 	},
 	"editorScript": "image-text-wrap-editor",

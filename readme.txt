@@ -4,11 +4,11 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Wrap body text around an image. Float it, drop it into the copy, and choose how the text hugs it, right down to a PNG's cut-out shape.
+Wrap body text around an image. Float it, drop it into the copy, and choose how the text hugs it.
 
 == Description ==
 
@@ -20,7 +20,7 @@ You get real control over the wrap instead of the all-or-nothing float the core 
 * **Vertical offset** slides the image down into the copy so text flows *above* it, then wraps beside and below.
 * **Wrap offset** sets the gap between the image and the text on the wrapping side.
 * **Vertical gap** adds breathing room above and below the image.
-* **Wrap shape** lets the text hug a plain box, a circle, an ellipse, or the actual silhouette of a transparent PNG (via CSS `shape-outside`).
+* **Wrap shape** lets the text hug a plain box, a circle, or an ellipse.
 * **Top & bottom** mode drops the image into its own band with text above and below only.
 * **Captions** appear below the image, edited from the sidebar, with the body text wrapping around image and caption together. They accept simple inline HTML (em, strong, links).
 
@@ -40,9 +40,6 @@ The block saves as plain HTML with inline styles, so published posts keep render
 
 Raise the **Vertical offset** slider. The text that flows above the image comes from the block placed immediately after it, so make sure a paragraph follows the image block.
 
-= The contour (silhouette) wrap isn't following my image. Why? =
-
-Contour wrap reads the image's transparency. It only works with a transparent PNG or WebP served from your own site. A JPG or an opaque image has no silhouette to follow, so it falls back to a rectangle.
 
 = Can text wrap around all four sides of a centered image? =
 
@@ -60,9 +57,11 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 
 1. An image floated into an article with text flowing above, beside, and below it.
 2. The Text Wrap panel: wrap type, position, vertical offset, vertical gap, wrap offset, shape, and display width.
-3. Contour wrap following the silhouette of a transparent PNG.
 
 == Changelog ==
+
+= 1.2.0 =
+* Removed the contour (silhouette) wrap shape. Rectangle, circle, and ellipse wraps remain.
 
 = 1.1.1 =
 * Removed the one-time rename migration now that its purpose is complete. No functional change.
@@ -81,6 +80,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 * Responsive: stacks full width below 600px.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Removes the contour (silhouette) wrap shape. Other wrap shapes are unchanged; no action needed.
 
 = 1.1.1 =
 Housekeeping release. Removes the one-time migration code; no functional change and no action needed.

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1544 500" width="1544" height="500" role="img" aria-label="Image Text Wrap — a Fernwell Media tool">
+  <!-- grounds -->
+  <rect x="0" y="0" width="1544" height="500" fill="#f8f8f5"/>
+  <rect x="910" y="0" width="634" height="500" fill="#0e5244"/>
+
+  <!-- ===== LEFT: brand + headline ===== -->
+  <!-- kicker -->
+  <rect x="92" y="150" width="15" height="15" rx="2" fill="#f4a860"/>
+  <text x="119" y="163" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
+        font-size="18" font-weight="600" letter-spacing="3" fill="#4d5a55">A FERNWELL MEDIA TOOL</text>
+
+  <!-- headline -->
+  <text x="90" y="272" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
+        font-size="74" font-weight="700" letter-spacing="-1" fill="#0e5244">Image Text Wrap</text>
+
+  <!-- apricot accent rule -->
+  <rect x="92" y="300" width="118" height="6" rx="3" fill="#f4a860"/>
+
+  <!-- tagline -->
+  <text x="92" y="356" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
+        font-size="28" font-weight="400" fill="#4d5a55">Body text that flows around your images.</text>
+  <text x="92" y="394" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
+        font-size="28" font-weight="400" fill="#4d5a55">Right in the WordPress block editor.</text>
+
+  <!-- ===== RIGHT: live wrap preview ===== -->
+  <!-- text above (full width) -->
+  <rect x="972" y="118" width="478" height="14" rx="7" fill="#f8f8f5"/>
+  <rect x="972" y="146" width="478" height="14" rx="7" fill="#f8f8f5"/>
+
+  <!-- floated image tile -->
+  <rect x="972" y="200" width="128" height="128" rx="18" fill="#f4a860"/>
+  <circle cx="1074" cy="228" r="11" fill="#0e5244"/>
+  <polygon points="984,304 1012,262 1032,282 1054,258 1090,304" fill="#0e5244"/>
+
+  <!-- text beside the image (short, indented) -->
+  <rect x="1128" y="204" width="322" height="14" rx="7" fill="#f8f8f5"/>
+  <rect x="1128" y="232" width="322" height="14" rx="7" fill="#f8f8f5"/>
+  <rect x="1128" y="260" width="322" height="14" rx="7" fill="#f8f8f5"/>
+  <rect x="1128" y="288" width="322" height="14" rx="7" fill="#f8f8f5"/>
+
+  <!-- text below (full width, reflowed) -->
+  <rect x="972" y="352" width="478" height="14" rx="7" fill="#f8f8f5"/>
+  <rect x="972" y="380" width="356" height="14" rx="7" fill="#f8f8f5"/>
+</svg>

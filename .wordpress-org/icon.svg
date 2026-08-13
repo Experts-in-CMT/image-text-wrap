@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Image Text Wrap icon, Fernwell Grove palette">
+  <rect x="0" y="0" width="256" height="256" rx="52" fill="#f4a860"/>
+
+  <!-- image tile -->
+  <rect x="32" y="54" width="84" height="84" rx="13" fill="#0e5244"/>
+  <circle cx="97" cy="76" r="8" fill="#f4a860"/>
+  <polygon points="40,120 62,88 78,106 92,84 108,120" fill="#f4a860"/>
+
+  <!-- text wrapping BESIDE the image -->
+  <rect x="130" y="60"  width="90" height="12" rx="6" fill="#0e5244"/>
+  <rect x="130" y="86"  width="90" height="12" rx="6" fill="#0e5244"/>
+  <rect x="130" y="112" width="90" height="12" rx="6" fill="#0e5244"/>
+
+  <!-- text flowing full-width BELOW the image -->
+  <rect x="32" y="158" width="188" height="12" rx="6" fill="#0e5244"/>
+  <rect x="32" y="182" width="128" height="12" rx="6" fill="#0e5244"/>
+</svg>

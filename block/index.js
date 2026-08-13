@@ -32,7 +32,7 @@
 	 */
 	function figureProps( attrs ) {
 		var mode = attrs.wrapMode === 'stack' ? 'stack' : 'beside';
-		var shape = attrs.shape || 'rectangle';
+		var shape = attrs.shape || 'rectangle'; if ( shape !== 'circle' && shape !== 'ellipse' ) { shape = 'rectangle'; }
 		var offset = typeof attrs.offset === 'number' ? attrs.offset : 16;
 		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
 		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
@@ -61,7 +61,7 @@
 			'--image-text-wrap-offset': offset + 'px'
 		};
 
-		// Shape / contour logic only applies when text runs beside the image.
+		// Shape logic only applies when text runs beside the image.
 		if ( mode === 'beside' ) {
 			// The inset path handles vertical offset (text above) and/or a
 			// vertical gap (top+bottom breathing room). Either one switches to a
@@ -114,15 +114,7 @@
 					classes.push( 'has-shape' );
 				}
 
-				// Contour wrap: shape-outside reads the image's own alpha channel.
-				// Must be same-origin + have transparency, or it degrades to rectangle.
-				if ( effectiveShape === 'contour' && attrs.url ) {
-					style.shapeOutside = 'url("' + attrs.url + '")';
-					style.shapeImageThreshold = String(
-						typeof attrs.threshold === 'number' ? attrs.threshold : 0.5
-					);
-					style.shapeMargin = offset + 'px';
-				} else if ( effectiveShape === 'circle' ) {
+				if ( effectiveShape === 'circle' ) {
 					style.shapeOutside = 'circle(50%)';
 					style.shapeMargin = offset + 'px';
 				} else if ( effectiveShape === 'ellipse' ) {
@@ -225,8 +217,7 @@
 						options: [
 							{ label: __( 'Rectangle (bounding box)', 'image-text-wrap' ), value: 'rectangle' },
 							{ label: __( 'Circle', 'image-text-wrap' ), value: 'circle' },
-							{ label: __( 'Ellipse', 'image-text-wrap' ), value: 'ellipse' },
-							{ label: __( 'Contour — follow silhouette', 'image-text-wrap' ), value: 'contour' }
+							{ label: __( 'Ellipse', 'image-text-wrap' ), value: 'ellipse' }
 						],
 						onChange: function ( v ) { setAttributes( { shape: v } ); }
 					} )
@@ -253,24 +244,6 @@
 					value: attrs.caption,
 					onChange: function ( v ) { setAttributes( { caption: v } ); }
 				} ),
-				attrs.wrapMode !== 'stack' && attrs.shape === 'contour'
-					? el( RangeControl, {
-						label: __( 'Contour tightness (alpha threshold)', 'image-text-wrap' ),
-						help: __( 'Higher = hugs only the most opaque pixels.', 'image-text-wrap' ),
-						value: attrs.threshold,
-						min: 0,
-						max: 1,
-						step: 0.05,
-						onChange: function ( v ) { setAttributes( { threshold: v } ); }
-					} )
-					: null,
-				attrs.wrapMode !== 'stack' && attrs.shape === 'contour'
-					? el(
-						Notice,
-						{ status: 'info', isDismissible: false },
-						__( 'Contour wrap needs a transparent PNG/WebP served from this site. Non-transparent images fall back to a rectangle.', 'image-text-wrap' )
-					)
-					: null,
 				attrs.url
 					? el(
 						MediaUploadCheck,
