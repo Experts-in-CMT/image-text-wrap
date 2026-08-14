@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Image Text Wrap
  * Description: Adds an Image Text Wrap block that flows body text around an image. Float it, slide it down so text runs above it, and wrap to a box, a circle, or an ellipse.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: Kenneth Raymond
  * Requires at least: 6.4
  * Requires PHP: 7.4
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'IMAGE_TEXT_WRAP_VER', '1.3.0' );
+define( 'IMAGE_TEXT_WRAP_VER', '1.3.1' );
 
 /**
  * Register scripts/styles, then the block from its block.json.
@@ -83,5 +83,19 @@ add_action( 'init', function () {
 		$ver( 'editor.css' )
 	);
 
+	wp_set_script_translations( 'image-text-wrap-editor', 'image-text-wrap' );
+
 	register_block_type( $dir );
+} );
+
+/**
+ * KSES strips inline style properties it does not know. The block's wrap is
+ * built from shape-outside (and content-box sizing), so authors without
+ * unfiltered_html would otherwise have the wrap silently stripped on save,
+ * which also invalidates the block on the next edit.
+ */
+add_filter( 'safe_style_css', function ( $props ) {
+	$props[] = 'shape-outside';
+	$props[] = 'box-sizing';
+	return $props;
 } );

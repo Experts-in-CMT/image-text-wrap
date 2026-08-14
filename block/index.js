@@ -14,6 +14,7 @@
 	var __ = i18n.__;
 
 	var useBlockProps = blockEditor.useBlockProps;
+	var RichText = blockEditor.RichText;
 	var InspectorControls = blockEditor.InspectorControls;
 	var MediaUpload = blockEditor.MediaUpload;
 	var MediaUploadCheck = blockEditor.MediaUploadCheck;
@@ -22,7 +23,6 @@
 	var PanelBody = components.PanelBody;
 	var SelectControl = components.SelectControl;
 	var RangeControl = components.RangeControl;
-	var TextareaControl = components.TextareaControl;
 	var Button = components.Button;
 	var Notice = components.Notice;
 
@@ -77,15 +77,19 @@
 				// edge) and never by stuffing the gap into padding-top (which moved
 				// the image when the slider moved). Geometry:
 				//
-				//   padding-top    = offsetY               (vertical offset ONLY —
+				//   padding-top    = offsetY               (vertical offset ONLY;
 				//                    the contour offset never moves the image)
 				//   padding side   = offset (text side), 0 (flush side)
-				//   padding-bottom = offset + gapY
+				//   padding-bottom = offset
 				//
 				//   ellipse( rX  calc(50% + dR)  at  cX  calc(50% + dC) ) border-box
 				//     rX = width/2 + offset          cX = padLeft + width/2
-				//     dR = (offset - offsetY - gapY) / 2
-				//     dC = (offsetY - offset - gapY) / 2
+				//     dR = (offset - offsetY) / 2
+				//     dC = (offsetY - offset) / 2
+				//
+				// gapY (bounding box only) is deliberately ignored here: its control
+				// is hidden in contour mode, so a stale value must not distort the
+				// geometry.
 				//
 				// The calc(50% ± k) terms make the vertical radius/centre EXACT for
 				// any caption height without measuring it: the 50% absorbs the
@@ -110,14 +114,14 @@
 				if ( offsetY > 0 ) {
 					style.paddingTop = offsetY + 'px';
 				}
-				style.paddingBottom = ( offset + gapY ) + 'px';
+				style.paddingBottom = offset + 'px';
 				style.marginBottom = '0';
 
 				var round2 = function ( n ) { return Math.round( n * 100 ) / 100; };
 				var rX = round2( ( width / 2 ) + offset );
 				var cX = round2( padLeft + ( width / 2 ) );
-				var dR = round2( ( offset - offsetY - gapY ) / 2 );
-				var dC = round2( ( offsetY - offset - gapY ) / 2 );
+				var dR = round2( ( offset - offsetY ) / 2 );
+				var dC = round2( ( offsetY - offset ) / 2 );
 				style.shapeOutside = 'ellipse(' + rX + 'px calc(50% + ' + dR + 'px) at ' +
 					cX + 'px calc(50% + ' + dC + 'px)) border-box';
 			} else {
@@ -235,8 +239,8 @@
 						value: attrs.shape,
 						options: [
 							{ label: __( 'Bounding box', 'image-text-wrap' ), value: 'rectangle' },
-							{ label: __( 'Contour — circle', 'image-text-wrap' ), value: 'circle' },
-							{ label: __( 'Contour — ellipse', 'image-text-wrap' ), value: 'ellipse' }
+							{ label: __( 'Contour: circle', 'image-text-wrap' ), value: 'circle' },
+							{ label: __( 'Contour: ellipse', 'image-text-wrap' ), value: 'ellipse' }
 						],
 						onChange: function ( v ) { setAttributes( { shape: v } ); }
 					} )
@@ -255,7 +259,7 @@
 				attrs.wrapMode !== 'stack' && ( attrs.shape === 'circle' || attrs.shape === 'ellipse' )
 					? el( RangeControl, {
 						label: __( 'Contour offset (px)', 'image-text-wrap' ),
-						help: __( 'Uniform standoff between the text and the wrap contour, all the way around. Never moves the image.', 'image-text-wrap' ),
+						help: __( 'Standoff between the text and the wrap contour. The gap above the image is limited by the vertical offset. Never moves the image.', 'image-text-wrap' ),
 						value: attrs.offset,
 						min: 0,
 						max: 120,
@@ -301,12 +305,11 @@
 					max: 1000,
 					onChange: function ( v ) { setAttributes( { width: v } ); }
 				} ),
-				el( TextareaControl, {
-					label: __( 'Caption', 'image-text-wrap' ),
-					help: __( 'Shown below the image; text wraps around image + caption together. Accepts simple inline HTML: <em>, <strong>, <a href>. Style the caption text under Styles → Typography.', 'image-text-wrap' ),
-					value: attrs.caption,
-					onChange: function ( v ) { setAttributes( { caption: v } ); }
-				} ),
+				el(
+					'p',
+					{ className: 'components-base-control__help' },
+					__( 'Caption: click below the image in the canvas to write one. Text wraps around image + caption together. Style the caption text under Styles → Typography.', 'image-text-wrap' )
+				),
 				attrs.url
 					? el(
 						MediaUploadCheck,
@@ -357,11 +360,18 @@
 				'figure',
 				blockProps,
 				el( 'img', { src: attrs.url, alt: attrs.alt } ),
-				// Caption is edited in the sidebar; here it's display-only so the
-				// canvas previews how the wrap includes it. RawHTML lets simple
-				// inline markup (em / strong / a) render instead of showing as text.
-				attrs.caption
-					? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
+				// Caption is edited in place, like core/image. RichText enforces the
+				// inline-only format whitelist (bold, italic, link) that the old raw
+				// textarea merely documented, and previews the wrap around it live.
+				( attrs.caption || props.isSelected )
+					? el( RichText, {
+						tagName: 'figcaption',
+						'aria-label': __( 'Image caption text', 'image-text-wrap' ),
+						placeholder: __( 'Add a caption (credit, source)', 'image-text-wrap' ),
+						value: attrs.caption,
+						allowedFormats: [ 'core/bold', 'core/italic', 'core/link' ],
+						onChange: function ( v ) { setAttributes( { caption: v } ); }
+					} )
 					: null
 			)
 		);
@@ -384,13 +394,298 @@
 			blockProps,
 			el( 'img', { src: attrs.url, alt: attrs.alt || '' } ),
 			attrs.caption && attrs.caption.length
+				? el( RichText.Content, { tagName: 'figcaption', value: attrs.caption } )
+				: null
+		);
+	}
+
+	/* =====================================================================
+	 * Deprecations: exact replicas of every save() this block ever shipped,
+	 * so published posts keep validating across upgrades. Newest first.
+	 * ===================================================================== */
+
+	// --- v1.3.0: like current, but gapY leaked into the contour geometry ---
+	function figurePropsV130( attrs ) {
+		var mode = attrs.wrapMode === 'stack' ? 'stack' : 'beside';
+		var shape = attrs.shape || 'rectangle'; if ( shape !== 'circle' && shape !== 'ellipse' ) { shape = 'rectangle'; }
+		var offset = typeof attrs.offset === 'number' ? attrs.offset : 16;
+		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
+		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
+		var gapTop = typeof attrs.gapTop === 'number' ? attrs.gapTop : 0;
+		var width = typeof attrs.width === 'number' ? attrs.width : 300;
+		var hasCaption = !! ( attrs.caption && attrs.caption.length );
+
+		var side = attrs.side;
+		if ( mode === 'beside' ) {
+			side = side === 'right' ? 'right' : 'left';
+		} else {
+			side = ( side === 'right' || side === 'center' ) ? side : 'left';
+		}
+
+		var classes = [ 'image-text-wrap' ];
+		if ( mode === 'stack' ) {
+			classes.push( 'wrap-stack' );
+		}
+		classes.push( 'align-' + side );
+
+		var style = {
+			width: width + 'px',
+			'--image-text-wrap-offset': offset + 'px'
+		};
+
+		if ( mode === 'beside' ) {
+			var isShape = ( shape === 'circle' || shape === 'ellipse' );
+
+			if ( isShape ) {
+				classes.push( 'shape-' + ( ( hasCaption && shape === 'circle' ) ? 'ellipse' : shape ) );
+				classes.push( 'has-shape' );
+				style.boxSizing = 'content-box';
+
+				var padLeft = ( side === 'right' ) ? offset : 0;
+				var padRight = ( side === 'right' ) ? 0 : offset;
+				style.paddingLeft = padLeft + 'px';
+				style.paddingRight = padRight + 'px';
+				if ( offsetY > 0 ) {
+					style.paddingTop = offsetY + 'px';
+				}
+				style.paddingBottom = ( offset + gapY ) + 'px';
+				style.marginBottom = '0';
+
+				var round2 = function ( n ) { return Math.round( n * 100 ) / 100; };
+				var rX = round2( ( width / 2 ) + offset );
+				var cX = round2( padLeft + ( width / 2 ) );
+				var dR = round2( ( offset - offsetY - gapY ) / 2 );
+				var dC = round2( ( offsetY - offset - gapY ) / 2 );
+				style.shapeOutside = 'ellipse(' + rX + 'px calc(50% + ' + dR + 'px) at ' +
+					cX + 'px calc(50% + ' + dC + 'px)) border-box';
+			} else {
+				classes.push( 'shape-rectangle' );
+
+				var useInset = offsetY > 0 || gapY > 0;
+				if ( useInset ) {
+					classes.push( 'has-shape' );
+					style.boxSizing = 'content-box';
+
+					if ( offsetY > 0 ) {
+						style.paddingTop = offsetY + 'px';
+					}
+					if ( gapY > 0 ) {
+						style.paddingBottom = gapY + 'px';
+					}
+					if ( side === 'right' ) {
+						style.paddingLeft = offset + 'px';
+					} else {
+						style.paddingRight = offset + 'px';
+					}
+					style.marginBottom = '0';
+
+					var insetTop = Math.max( 0, offsetY - gapTop );
+					style.shapeOutside = 'inset(' + insetTop + 'px 0px 0px 0px)';
+				}
+			}
+		}
+
+		return { className: classes.join( ' ' ), style: style };
+	}
+
+	// --- v1.1.0 to v1.2.0: shape-margin contour, caption forced rectangle ---
+	function figurePropsV120( attrs ) {
+		var mode = attrs.wrapMode === 'stack' ? 'stack' : 'beside';
+		var shape = attrs.shape || 'rectangle'; if ( shape !== 'circle' && shape !== 'ellipse' ) { shape = 'rectangle'; }
+		var offset = typeof attrs.offset === 'number' ? attrs.offset : 16;
+		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
+		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
+		var width = typeof attrs.width === 'number' ? attrs.width : 300;
+		var hasCaption = !! ( attrs.caption && attrs.caption.length );
+
+		var side = attrs.side;
+		if ( mode === 'beside' ) {
+			side = side === 'right' ? 'right' : 'left';
+		} else {
+			side = ( side === 'right' || side === 'center' ) ? side : 'left';
+		}
+
+		var classes = [ 'image-text-wrap' ];
+		if ( mode === 'stack' ) {
+			classes.push( 'wrap-stack' );
+		}
+		classes.push( 'align-' + side );
+
+		var style = {
+			width: width + 'px',
+			'--image-text-wrap-offset': offset + 'px'
+		};
+
+		if ( mode === 'beside' ) {
+			var useInset = offsetY > 0 || gapY > 0;
+
+			if ( useInset ) {
+				classes.push( 'shape-rectangle' );
+				classes.push( 'has-shape' );
+				style.boxSizing = 'content-box';
+
+				if ( offsetY > 0 ) {
+					style.paddingTop = offsetY + 'px';
+				}
+				if ( gapY > 0 ) {
+					style.paddingBottom = gapY + 'px';
+				}
+				if ( side === 'right' ) {
+					style.paddingLeft = offset + 'px';
+				} else {
+					style.paddingRight = offset + 'px';
+				}
+				style.marginBottom = '0';
+
+				var insetTop = Math.max( 0, offsetY - gapY );
+				style.shapeOutside = 'inset(' + insetTop + 'px 0px 0px 0px)';
+			} else {
+				var effectiveShape = ( hasCaption && shape !== 'rectangle' ) ? 'rectangle' : shape;
+				classes.push( 'shape-' + effectiveShape );
+				if ( effectiveShape !== 'rectangle' ) {
+					classes.push( 'has-shape' );
+				}
+
+				if ( effectiveShape === 'circle' ) {
+					style.shapeOutside = 'circle(50%)';
+					style.shapeMargin = offset + 'px';
+				} else if ( effectiveShape === 'ellipse' ) {
+					style.shapeOutside = 'ellipse(50% 50%)';
+					style.shapeMargin = offset + 'px';
+				}
+			}
+		}
+
+		return { className: classes.join( ' ' ), style: style };
+	}
+
+	// v1.0.0 differed from v1.1/1.2 only in having no caption at all.
+	function saveV130( props ) {
+		var attrs = props.attributes;
+		if ( ! attrs.url ) {
+			return null;
+		}
+		var fp = figurePropsV130( attrs );
+		var blockProps = useBlockProps.save( { className: fp.className, style: fp.style } );
+		return el(
+			'figure',
+			blockProps,
+			el( 'img', { src: attrs.url, alt: attrs.alt || '' } ),
+			attrs.caption && attrs.caption.length
 				? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
 				: null
 		);
 	}
 
+	function saveV120( props ) {
+		var attrs = props.attributes;
+		if ( ! attrs.url ) {
+			return null;
+		}
+		var fp = figurePropsV120( attrs );
+		var blockProps = useBlockProps.save( { className: fp.className, style: fp.style } );
+		return el(
+			'figure',
+			blockProps,
+			el( 'img', { src: attrs.url, alt: attrs.alt || '' } ),
+			attrs.caption && attrs.caption.length
+				? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
+				: null
+		);
+	}
+
+	function saveV100( props ) {
+		var attrs = props.attributes;
+		if ( ! attrs.url ) {
+			return null;
+		}
+		var fp = figurePropsV120( attrs );
+		var blockProps = useBlockProps.save( { className: fp.className, style: fp.style } );
+		return el(
+			'figure',
+			blockProps,
+			el( 'img', { src: attrs.url, alt: attrs.alt } )
+		);
+	}
+
+	var LEGACY_SUPPORTS = { anchor: true, html: false, className: true };
+
+	var ATTRS_BASE = {
+		id: { type: 'number' },
+		url: { type: 'string', default: '' },
+		alt: { type: 'string', default: '' },
+		width: { type: 'number', default: 300 },
+		wrapMode: { type: 'string', default: 'beside' },
+		side: { type: 'string', default: 'left' },
+		shape: { type: 'string', default: 'rectangle' },
+		offset: { type: 'number', default: 16 },
+		offsetY: { type: 'number', default: 0 },
+		gapY: { type: 'number', default: 0 }
+	};
+
+	function withAttrs( extra ) {
+		var out = {};
+		Object.keys( ATTRS_BASE ).forEach( function ( k ) { out[ k ] = ATTRS_BASE[ k ]; } );
+		Object.keys( extra || {} ).forEach( function ( k ) { out[ k ] = extra[ k ]; } );
+		return out;
+	}
+
+	// Old vertical-gap doubled as the top gap; carry it into gapTop so
+	// recovered blocks keep their configured breathing room above the image.
+	function migrateGapTop( attrs ) {
+		var out = {};
+		Object.keys( attrs ).forEach( function ( k ) { out[ k ] = attrs[ k ]; } );
+		out.gapTop = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
+		return out;
+	}
+
+	var deprecated = [
+		{
+			// v1.3.0
+			attributes: withAttrs( {
+				gapTop: { type: 'number', default: 0 },
+				caption: { type: 'string', default: '' }
+			} ),
+			supports: {
+				anchor: true,
+				html: false,
+				className: true,
+				typography: {
+					fontSize: true,
+					lineHeight: true,
+					__experimentalFontStyle: true,
+					__experimentalFontWeight: true,
+					__experimentalLetterSpacing: true,
+					__experimentalTextTransform: true,
+					__experimentalTextDecoration: true
+				}
+			},
+			save: saveV130
+		},
+		{
+			// v1.1.0 to v1.2.0
+			attributes: withAttrs( {
+				threshold: { type: 'number', default: 0.5 },
+				caption: { type: 'string', default: '' }
+			} ),
+			supports: LEGACY_SUPPORTS,
+			save: saveV120,
+			migrate: migrateGapTop
+		},
+		{
+			// v1.0.0 (no caption)
+			attributes: withAttrs( {
+				threshold: { type: 'number', default: 0.5 }
+			} ),
+			supports: LEGACY_SUPPORTS,
+			save: saveV100,
+			migrate: migrateGapTop
+		}
+	];
+
 	blocks.registerBlockType( 'image-text-wrap/image-text-wrap', {
 		edit: Edit,
-		save: Save
+		save: Save,
+		deprecated: deprecated
 	} );
 } )( window.wp.blocks, window.wp.element, window.wp.blockEditor, window.wp.components, window.wp.i18n );

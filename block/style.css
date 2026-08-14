@@ -18,12 +18,26 @@
 	height: auto;
 }
 
-/* Caption sits below the image, inside the floated figure, at the image's width. */
+/*
+ * Caption sits below the image, inside the floated figure, at the image's
+ * width. Font size and line height are NOT set here: both inherit from the
+ * figure, where the block's typography support writes the user's choices
+ * (the 0.85em keeps the caption proportionally smaller than the chosen size).
+ */
 .image-text-wrap figcaption {
 	margin-top: 0.5em;
 	font-size: 0.85em;
-	line-height: 1.4;
 	opacity: 0.75;
+}
+
+/*
+ * Shape wraps size the box as content-box and add the text gap as padding,
+ * so cap the content at (column - gap) to keep the border box inside the
+ * column on narrow viewports. When the image is clamped, the px shape is
+ * wider than the shrunken image; text stands off further but never overlaps.
+ */
+.image-text-wrap.has-shape {
+	max-width: calc( 100% - var( --image-text-wrap-offset, 0px ) );
 }
 
 /* =========================================================================
