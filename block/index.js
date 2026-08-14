@@ -36,6 +36,7 @@
 		var offset = typeof attrs.offset === 'number' ? attrs.offset : 16;
 		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
 		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
+		var gapTop = typeof attrs.gapTop === 'number' ? attrs.gapTop : 0;
 		var width = typeof attrs.width === 'number' ? attrs.width : 300;
 		var hasCaption = !! ( attrs.caption && attrs.caption.length );
 
@@ -63,64 +64,103 @@
 
 		// Shape logic only applies when text runs beside the image.
 		if ( mode === 'beside' ) {
-			// The inset path handles vertical offset (text above) and/or a
-			// vertical gap (top+bottom breathing room). Either one switches to a
-			// deterministic rectangular wrap built from padding + shape-outside.
-			var useInset = offsetY > 0 || gapY > 0;
+			var isShape = ( shape === 'circle' || shape === 'ellipse' );
 
-			if ( useInset ) {
-				// All gaps are REAL padding; shape-outside spans the whole padded
-				// box so text avoids it — deterministic, no shape-margin reliance.
-				// content-box keeps `width` equal to the image width.
+			if ( isShape ) {
+				// CONTOUR wrap (circle / ellipse): text stands off the wrap contour by
+				// a single uniform Contour offset, InDesign-style. The contour is the
+				// shape enclosing the image AND its caption, so the caption is always
+				// inside the wrap and can never be overrun.
 				//
-				//   padding-top    = offsetY  (drops the image; text flows above)
-				//   padding-bottom = gapY     (space below image before text resumes)
-				//   padding side   = offset   (text-side gap)
-				//   shape top inset= offsetY - gapY  (lifts the wrap gapY above the
-				//                    image top so the top gap matches the bottom)
-				// Rectangular wrap; shape presets apply only when both are 0.
-				classes.push( 'shape-rectangle' );
+				// The standoff is created by growing the wrap SHAPE itself, never by
+				// shape-margin (which collapses to ~0 where the shape meets the box
+				// edge) and never by stuffing the gap into padding-top (which moved
+				// the image when the slider moved). Geometry:
+				//
+				//   padding-top    = offsetY               (vertical offset ONLY —
+				//                    the contour offset never moves the image)
+				//   padding side   = offset (text side), 0 (flush side)
+				//   padding-bottom = offset + gapY
+				//
+				//   ellipse( rX  calc(50% + dR)  at  cX  calc(50% + dC) ) border-box
+				//     rX = width/2 + offset          cX = padLeft + width/2
+				//     dR = (offset - offsetY - gapY) / 2
+				//     dC = (offsetY - offset - gapY) / 2
+				//
+				// The calc(50% ± k) terms make the vertical radius/centre EXACT for
+				// any caption height without measuring it: the 50% absorbs the
+				// unknown caption, the constant absorbs the paddings. Derived edges:
+				//   shape top    = image top - offset   (standoff above, within offsetY)
+				//   shape bottom = caption bottom + offset
+				//   shape sides  = image edge ± offset; flush side clips at the column
+				// On a square image with no caption the ellipse IS a circle; a true
+				// circle cannot enclose a caption, so with one the contour is the
+				// enclosing ellipse.
+				classes.push( 'shape-' + ( ( hasCaption && shape === 'circle' ) ? 'ellipse' : shape ) );
 				classes.push( 'has-shape' );
+
+				// content-box keeps `width` equal to the image width; the padding
+				// (outside it) grows the border box the shape is measured from.
 				style.boxSizing = 'content-box';
 
+				var padLeft = ( side === 'right' ) ? offset : 0;   // text runs on the left
+				var padRight = ( side === 'right' ) ? 0 : offset;  // text runs on the right
+				style.paddingLeft = padLeft + 'px';
+				style.paddingRight = padRight + 'px';
 				if ( offsetY > 0 ) {
 					style.paddingTop = offsetY + 'px';
 				}
-				if ( gapY > 0 ) {
-					style.paddingBottom = gapY + 'px';
-				}
-				if ( side === 'right' ) {
-					style.paddingLeft = offset + 'px';
-				} else {
-					style.paddingRight = offset + 'px';
-				}
+				style.paddingBottom = ( offset + gapY ) + 'px';
 				style.marginBottom = '0';
 
-				// Top gap can't exceed the vertical offset (no room above the
-				// image beyond where it was pushed down), so clamp at 0.
-				var insetTop = Math.max( 0, offsetY - gapY );
-				style.shapeOutside = 'inset(' + insetTop + 'px 0px 0px 0px)';
+				var round2 = function ( n ) { return Math.round( n * 100 ) / 100; };
+				var rX = round2( ( width / 2 ) + offset );
+				var cX = round2( padLeft + ( width / 2 ) );
+				var dR = round2( ( offset - offsetY - gapY ) / 2 );
+				var dC = round2( ( offsetY - offset - gapY ) / 2 );
+				style.shapeOutside = 'ellipse(' + rX + 'px calc(50% + ' + dR + 'px) at ' +
+					cX + 'px calc(50% + ' + dC + 'px)) border-box';
 			} else {
-				// Offset 0: original per-shape behavior. Markup is unchanged from
-				// before offsetY existed, so older blocks stay valid.
-				//
-				// A caption sits below the image inside the figure. The non-rectangular
-				// shapes only carve the image, so text would overlap the caption band.
-				// When a caption is present, fall back to a rectangular (bounding-box)
-				// wrap that includes the caption.
-				var effectiveShape = ( hasCaption && shape !== 'rectangle' ) ? 'rectangle' : shape;
-				classes.push( 'shape-' + effectiveShape );
-				if ( effectiveShape !== 'rectangle' ) {
-					classes.push( 'has-shape' );
-				}
+				// BOUNDING BOX wrap (rectangle): independent per-side gaps,
+				// InDesign-style — Text-side gap (offset), Gap above (gapTop) and
+				// Gap below (gapY) — plus the Vertical offset. Implemented as real
+				// padding + an inset shape-outside; no round geometry needed.
+				classes.push( 'shape-rectangle' );
 
-				if ( effectiveShape === 'circle' ) {
-					style.shapeOutside = 'circle(50%)';
-					style.shapeMargin = offset + 'px';
-				} else if ( effectiveShape === 'ellipse' ) {
-					style.shapeOutside = 'ellipse(50% 50%)';
-					style.shapeMargin = offset + 'px';
+				var useInset = offsetY > 0 || gapY > 0;
+				if ( useInset ) {
+					// All gaps are REAL padding; the inset shape-outside spans the
+					// padded box so text avoids it. content-box keeps `width` equal
+					// to the image width.
+					//
+					//   padding-top    = offsetY  (drops the image; text flows above)
+					//   padding-bottom = gapY     (space below image before text resumes)
+					//   padding side   = offset   (text-side gap)
+					//   shape top inset= offsetY - gapTop  (holds text gapTop above
+					//                    the image top; only offsetY of room exists)
+					classes.push( 'has-shape' );
+					style.boxSizing = 'content-box';
+
+					if ( offsetY > 0 ) {
+						style.paddingTop = offsetY + 'px';
+					}
+					if ( gapY > 0 ) {
+						style.paddingBottom = gapY + 'px';
+					}
+					if ( side === 'right' ) {
+						style.paddingLeft = offset + 'px';
+					} else {
+						style.paddingRight = offset + 'px';
+					}
+					style.marginBottom = '0';
+
+					// Top gap can't exceed the vertical offset (no room above the
+					// image beyond where it was pushed down), so clamp at 0.
+					var insetTop = Math.max( 0, offsetY - gapTop );
+					style.shapeOutside = 'inset(' + insetTop + 'px 0px 0px 0px)';
 				}
+				// Offset 0 + gap 0: a plain rectangular float; the text-side gap is
+				// the box margin (set in CSS), so no shape-outside is needed.
 			}
 		}
 
@@ -189,9 +229,22 @@
 					onChange: function ( v ) { setAttributes( { side: v } ); }
 				} ),
 				attrs.wrapMode !== 'stack'
+					? el( SelectControl, {
+						label: __( 'Wrap around', 'image-text-wrap' ),
+						help: __( 'Bounding box wraps text to the image’s box with per-side gaps. Contour wraps text along a circle or ellipse enclosing the image and caption, with one uniform offset.', 'image-text-wrap' ),
+						value: attrs.shape,
+						options: [
+							{ label: __( 'Bounding box', 'image-text-wrap' ), value: 'rectangle' },
+							{ label: __( 'Contour — circle', 'image-text-wrap' ), value: 'circle' },
+							{ label: __( 'Contour — ellipse', 'image-text-wrap' ), value: 'ellipse' }
+						],
+						onChange: function ( v ) { setAttributes( { shape: v } ); }
+					} )
+					: null,
+				attrs.wrapMode !== 'stack'
 					? el( RangeControl, {
 						label: __( 'Vertical offset (px)', 'image-text-wrap' ),
-						help: __( 'Push the image down so text flows above it, then wraps beside and below (rectangular wrap).', 'image-text-wrap' ),
+						help: __( 'Push the image down so text flows above it before wrapping beside and below.', 'image-text-wrap' ),
 						value: attrs.offsetY,
 						min: 0,
 						max: 400,
@@ -199,36 +252,46 @@
 						onChange: function ( v ) { setAttributes( { offsetY: v } ); }
 					} )
 					: null,
-				attrs.wrapMode !== 'stack'
+				attrs.wrapMode !== 'stack' && ( attrs.shape === 'circle' || attrs.shape === 'ellipse' )
 					? el( RangeControl, {
-						label: __( 'Vertical gap (px)', 'image-text-wrap' ),
-						help: __( 'Breathing room above and below the image (top gap is limited by the vertical offset).', 'image-text-wrap' ),
-						value: attrs.gapY,
-						min: 0,
-						max: 80,
-						step: 4,
-						onChange: function ( v ) { setAttributes( { gapY: v } ); }
-					} )
-					: null,
-				attrs.wrapMode !== 'stack'
-					? el( SelectControl, {
-						label: __( 'Wrap shape', 'image-text-wrap' ),
-						value: attrs.shape,
-						options: [
-							{ label: __( 'Rectangle (bounding box)', 'image-text-wrap' ), value: 'rectangle' },
-							{ label: __( 'Circle', 'image-text-wrap' ), value: 'circle' },
-							{ label: __( 'Ellipse', 'image-text-wrap' ), value: 'ellipse' }
-						],
-						onChange: function ( v ) { setAttributes( { shape: v } ); }
-					} )
-					: null,
-				attrs.wrapMode !== 'stack'
-					? el( RangeControl, {
-						label: __( 'Wrap offset (px)', 'image-text-wrap' ),
+						label: __( 'Contour offset (px)', 'image-text-wrap' ),
+						help: __( 'Uniform standoff between the text and the wrap contour, all the way around. Never moves the image.', 'image-text-wrap' ),
 						value: attrs.offset,
 						min: 0,
-						max: 80,
+						max: 120,
 						onChange: function ( v ) { setAttributes( { offset: v } ); }
+					} )
+					: null,
+				attrs.wrapMode !== 'stack' && ! ( attrs.shape === 'circle' || attrs.shape === 'ellipse' )
+					? el( RangeControl, {
+						label: __( 'Text-side gap (px)', 'image-text-wrap' ),
+						help: __( 'Gap between the box and the wrapping text on the text side.', 'image-text-wrap' ),
+						value: attrs.offset,
+						min: 0,
+						max: 120,
+						onChange: function ( v ) { setAttributes( { offset: v } ); }
+					} )
+					: null,
+				attrs.wrapMode !== 'stack' && ! ( attrs.shape === 'circle' || attrs.shape === 'ellipse' )
+					? el( RangeControl, {
+						label: __( 'Gap above image (px)', 'image-text-wrap' ),
+						help: __( 'Gap between the text above and the top of the box. Needs a vertical offset to have room.', 'image-text-wrap' ),
+						value: attrs.gapTop,
+						min: 0,
+						max: 120,
+						step: 4,
+						onChange: function ( v ) { setAttributes( { gapTop: v } ); }
+					} )
+					: null,
+				attrs.wrapMode !== 'stack' && ! ( attrs.shape === 'circle' || attrs.shape === 'ellipse' )
+					? el( RangeControl, {
+						label: __( 'Gap below image (px)', 'image-text-wrap' ),
+						help: __( 'Gap between the bottom of the box and the text that resumes below.', 'image-text-wrap' ),
+						value: attrs.gapY,
+						min: 0,
+						max: 120,
+						step: 4,
+						onChange: function ( v ) { setAttributes( { gapY: v } ); }
 					} )
 					: null,
 				el( RangeControl, {
@@ -240,7 +303,7 @@
 				} ),
 				el( TextareaControl, {
 					label: __( 'Caption', 'image-text-wrap' ),
-					help: __( 'Shown below the image; text wraps around image + caption together. Accepts simple inline HTML: <em>, <strong>, <a href>.', 'image-text-wrap' ),
+					help: __( 'Shown below the image; text wraps around image + caption together. Accepts simple inline HTML: <em>, <strong>, <a href>. Style the caption text under Styles → Typography.', 'image-text-wrap' ),
 					value: attrs.caption,
 					onChange: function ( v ) { setAttributes( { caption: v } ); }
 				} ),

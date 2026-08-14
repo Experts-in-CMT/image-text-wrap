@@ -4,7 +4,7 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,11 +18,10 @@ You get real control over the wrap instead of the all-or-nothing float the core 
 
 * **Float left or right**, with the image aligned to your content column (not thrown into the page gutter).
 * **Vertical offset** slides the image down into the copy so text flows *above* it, then wraps beside and below.
-* **Wrap offset** sets the gap between the image and the text on the wrapping side.
-* **Vertical gap** adds breathing room above and below the image.
-* **Wrap shape** lets the text hug a plain box, a circle, or an ellipse.
+* **Bounding box wrap** flows text around the image's box, with independent gaps for the text side, above, and below — like a page-layout program's box wrap.
+* **Contour wrap** flows text along a circle or ellipse enclosing the image and its caption, with a single uniform **contour offset** controlling the standoff all the way around.
 * **Top & bottom** mode drops the image into its own band with text above and below only.
-* **Captions** appear below the image, edited from the sidebar, with the body text wrapping around image and caption together. They accept simple inline HTML (em, strong, links).
+* **Captions** appear below the image, edited from the sidebar, with the body text wrapping around image and caption together. They accept simple inline HTML (em, strong, links), and the standard WordPress Typography panel (font size, line height, appearance, letter spacing, letter case, decoration) styles the caption text.
 
 The block saves as plain HTML with inline styles, so published posts keep rendering even across editor updates. There is no build step and no external dependencies.
 
@@ -60,6 +59,15 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 
 == Changelog ==
 
+= 1.3.0 =
+* Reworked text wrapping around the two wrap models used in page-layout programs: **Bounding box** (wrap to the image's box with independent per-side gaps) and **Contour** (wrap along a circle or ellipse with one uniform offset).
+* Contour wrap: new **Contour offset** control — a uniform standoff between the text and the wrap contour, holding evenly all the way around the shape, including its widest point. Adjusting it never moves the image.
+* Contour wrap: the contour always encloses the image and its caption, at any caption height, so the caption is never overrun and never dropped. (A perfect circle cannot enclose a caption, so with a caption the contour is the enclosing ellipse.)
+* Fixed: circle and ellipse wraps were silently dropped to a rectangular wrap whenever a vertical offset or vertical gap was set, or when the image had a caption.
+* Bounding box wrap: independent **Text-side gap**, **Gap above image**, and **Gap below image** controls.
+* The image now stays flush with the content column on its non-text side in all wrap modes.
+* Added the standard WordPress Typography panel to the block — font size, line height, appearance (weight and italics), letter spacing, letter case, and decoration — using the theme's own presets; it styles the caption text, which stays proportionally smaller than the chosen size.
+
 = 1.2.0 =
 * Removed the contour (silhouette) wrap shape. Rectangle, circle, and ellipse wraps remain.
 
@@ -80,6 +88,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 * Responsive: stacks full width below 600px.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Reworks wrapping into Bounding box and Contour modes with proper per-side and contour offset controls, and fixes shapes being ignored with offsets or captions. Re-save existing Image Text Wrap blocks to pick up the corrected wrap.
 
 = 1.2.0 =
 Removes the contour (silhouette) wrap shape. Other wrap shapes are unchanged; no action needed.
