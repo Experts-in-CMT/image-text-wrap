@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Image Text Wrap
  * Description: Adds an Image Text Wrap block that flows body text around an image. Float it, slide it down so text runs above it, and wrap to a box, a circle, or an ellipse.
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Kenneth Raymond
  * Requires at least: 6.4
  * Requires PHP: 7.4
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'IMAGE_TEXT_WRAP_VER', '1.3.1' );
+define( 'IMAGE_TEXT_WRAP_VER', '1.3.2' );
 
 /**
  * Register scripts/styles, then the block from its block.json.

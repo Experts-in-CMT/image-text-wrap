@@ -488,10 +488,14 @@
 		return { className: classes.join( ' ' ), style: style };
 	}
 
-	// --- v1.1.0 to v1.2.0: shape-margin contour, caption forced rectangle ---
-	function figurePropsV120( attrs ) {
+	// --- v1.0.0 to v1.2.0: shape-margin shapes, caption forced rectangle ---
+	// allowContour replicates v1.0.0 to v1.1.1, which had no shape whitelist
+	// and shipped the silhouette wrap (shape-outside: url + alpha threshold)
+	// that v1.2.0 removed; v1.2.0 also added the coercion to rectangle.
+	function figurePropsV120( attrs, allowContour ) {
 		var mode = attrs.wrapMode === 'stack' ? 'stack' : 'beside';
-		var shape = attrs.shape || 'rectangle'; if ( shape !== 'circle' && shape !== 'ellipse' ) { shape = 'rectangle'; }
+		var shape = attrs.shape || 'rectangle';
+		if ( ! allowContour && shape !== 'circle' && shape !== 'ellipse' ) { shape = 'rectangle'; }
 		var offset = typeof attrs.offset === 'number' ? attrs.offset : 16;
 		var offsetY = typeof attrs.offsetY === 'number' ? attrs.offsetY : 0;
 		var gapY = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
@@ -546,7 +550,13 @@
 					classes.push( 'has-shape' );
 				}
 
-				if ( effectiveShape === 'circle' ) {
+				if ( effectiveShape === 'contour' && attrs.url ) {
+					style.shapeOutside = 'url("' + attrs.url + '")';
+					style.shapeImageThreshold = String(
+						typeof attrs.threshold === 'number' ? attrs.threshold : 0.5
+					);
+					style.shapeMargin = offset + 'px';
+				} else if ( effectiveShape === 'circle' ) {
 					style.shapeOutside = 'circle(50%)';
 					style.shapeMargin = offset + 'px';
 				} else if ( effectiveShape === 'ellipse' ) {
@@ -594,12 +604,30 @@
 		);
 	}
 
+	// v1.1.0 / v1.1.1: same as v1.2.0 but the silhouette contour still existed.
+	function saveV11x( props ) {
+		var attrs = props.attributes;
+		if ( ! attrs.url ) {
+			return null;
+		}
+		var fp = figurePropsV120( attrs, true );
+		var blockProps = useBlockProps.save( { className: fp.className, style: fp.style } );
+		return el(
+			'figure',
+			blockProps,
+			el( 'img', { src: attrs.url, alt: attrs.alt || '' } ),
+			attrs.caption && attrs.caption.length
+				? el( 'figcaption', {}, el( RawHTML, {}, attrs.caption ) )
+				: null
+		);
+	}
+
 	function saveV100( props ) {
 		var attrs = props.attributes;
 		if ( ! attrs.url ) {
 			return null;
 		}
-		var fp = figurePropsV120( attrs );
+		var fp = figurePropsV120( attrs, true );
 		var blockProps = useBlockProps.save( { className: fp.className, style: fp.style } );
 		return el(
 			'figure',
@@ -630,12 +658,44 @@
 		return out;
 	}
 
-	// Old vertical-gap doubled as the top gap; carry it into gapTop so
-	// recovered blocks keep their configured breathing room above the image.
-	function migrateGapTop( attrs ) {
+	// Shared legacy migration: the old vertical-gap doubled as the top gap, so
+	// carry it into gapTop; and scrub generated wrap classes that block
+	// recoveries stuffed into className over the years (has-shape is a live
+	// CSS class and would wrongly restyle the migrated block).
+	function migrateLegacy( attrs ) {
 		var out = {};
 		Object.keys( attrs ).forEach( function ( k ) { out[ k ] = attrs[ k ]; } );
 		out.gapTop = typeof attrs.gapY === 'number' ? attrs.gapY : 0;
+		if ( typeof out.className === 'string' ) {
+			var scrubbed = out.className.split( /\s+/ ).filter( function ( c ) {
+				return c && c !== 'has-shape' && c.indexOf( 'shape-' ) !== 0;
+			} ).join( ' ' );
+			if ( scrubbed ) {
+				out.className = scrubbed;
+			} else {
+				delete out.className;
+			}
+		}
+		return out;
+	}
+
+	// v1.2.0 rendered any non circle/ellipse shape as a rectangle, so keep
+	// that appearance for blocks whose markup matched the v1.2.0 save.
+	function migrateV120( attrs ) {
+		var out = migrateLegacy( attrs );
+		if ( out.shape !== 'rectangle' && out.shape !== 'circle' && out.shape !== 'ellipse' ) {
+			out.shape = 'rectangle';
+		}
+		return out;
+	}
+
+	// v1.0.0 to v1.1.1 silhouette-contour blocks wrapped along the image's
+	// alpha silhouette; the enclosing ellipse is the closest modern contour.
+	function migrateV11x( attrs ) {
+		var out = migrateLegacy( attrs );
+		if ( out.shape !== 'rectangle' && out.shape !== 'circle' && out.shape !== 'ellipse' ) {
+			out.shape = 'ellipse';
+		}
 		return out;
 	}
 
@@ -663,23 +723,33 @@
 			save: saveV130
 		},
 		{
-			// v1.1.0 to v1.2.0
+			// v1.2.0 (shape whitelist; silhouette contour removed)
 			attributes: withAttrs( {
 				threshold: { type: 'number', default: 0.5 },
 				caption: { type: 'string', default: '' }
 			} ),
 			supports: LEGACY_SUPPORTS,
 			save: saveV120,
-			migrate: migrateGapTop
+			migrate: migrateV120
 		},
 		{
-			// v1.0.0 (no caption)
+			// v1.1.0 / v1.1.1 (silhouette contour still available)
+			attributes: withAttrs( {
+				threshold: { type: 'number', default: 0.5 },
+				caption: { type: 'string', default: '' }
+			} ),
+			supports: LEGACY_SUPPORTS,
+			save: saveV11x,
+			migrate: migrateV11x
+		},
+		{
+			// v1.0.0 (no caption; silhouette contour available)
 			attributes: withAttrs( {
 				threshold: { type: 'number', default: 0.5 }
 			} ),
 			supports: LEGACY_SUPPORTS,
 			save: saveV100,
-			migrate: migrateGapTop
+			migrate: migrateV11x
 		}
 	];
 

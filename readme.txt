@@ -4,7 +4,7 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,6 +58,10 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 2. The Text Wrap panel: wrap type, position, wrap around (bounding box, contour circle, contour ellipse), vertical offset, contour offset or per-side gaps, and display width.
 
 == Changelog ==
+
+= 1.3.2 =
+* Blocks using the silhouette contour wrap removed in 1.2.0 (shape-outside from the image's alpha channel) now validate and migrate instead of showing "unexpected or invalid content": deprecated save formats for 1.0.0 and 1.1.x now include the contour branch, and those blocks convert to the enclosing ellipse contour, the closest modern equivalent.
+* Legacy migrations now scrub generated wrap classes (has-shape, shape-*) that earlier block recoveries had captured into the block's custom class name, which would have wrongly restyled migrated blocks.
 
 = 1.3.1 =
 * Blocks published under any earlier version now upgrade cleanly: deprecated save formats for 1.0.0 through 1.3.0 are registered, so existing posts no longer show "unexpected or invalid content", and the old vertical gap's top spacing carries over into the new Gap above image setting.
