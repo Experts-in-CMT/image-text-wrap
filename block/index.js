@@ -21,6 +21,12 @@
 	var MediaPlaceholder = blockEditor.MediaPlaceholder;
 
 	var PanelBody = components.PanelBody;
+	var TextareaControl = components.TextareaControl;
+
+	// Strips scripts and on* event attributes; keeps simple inline markup.
+	var safeHTML = ( window.wp.dom && window.wp.dom.safeHTML )
+		? window.wp.dom.safeHTML
+		: function ( h ) { return h; };
 	var SelectControl = components.SelectControl;
 	var RangeControl = components.RangeControl;
 	var Button = components.Button;
@@ -305,11 +311,12 @@
 					max: 1000,
 					onChange: function ( v ) { setAttributes( { width: v } ); }
 				} ),
-				el(
-					'p',
-					{ className: 'components-base-control__help' },
-					__( 'Caption: click below the image in the canvas to write one. Text wraps around image + caption together. Style the caption text under Styles → Typography.', 'image-text-wrap' )
-				),
+				el( TextareaControl, {
+					label: __( 'Caption', 'image-text-wrap' ),
+					help: __( 'Shown below the image; text wraps around image + caption together. Accepts simple inline HTML: <em>, <strong>, <a href>. Style the caption text under Styles → Typography.', 'image-text-wrap' ),
+					value: attrs.caption,
+					onChange: function ( v ) { setAttributes( { caption: v } ); }
+				} ),
 				attrs.url
 					? el(
 						MediaUploadCheck,
@@ -360,18 +367,12 @@
 				'figure',
 				blockProps,
 				el( 'img', { src: attrs.url, alt: attrs.alt } ),
-				// Caption is edited in place, like core/image. RichText enforces the
-				// inline-only format whitelist (bold, italic, link) that the old raw
-				// textarea merely documented, and previews the wrap around it live.
-				( attrs.caption || props.isSelected )
-					? el( RichText, {
-						tagName: 'figcaption',
-						'aria-label': __( 'Image caption text', 'image-text-wrap' ),
-						placeholder: __( 'Add a caption (credit, source)', 'image-text-wrap' ),
-						value: attrs.caption,
-						allowedFormats: [ 'core/bold', 'core/italic', 'core/link' ],
-						onChange: function ( v ) { setAttributes( { caption: v } ); }
-					} )
+				// Caption is edited in the sidebar; here it's display-only so the
+				// canvas previews how the wrap includes it. safeHTML strips scripts
+				// and on* attributes so a stored payload can never run in wp-admin,
+				// while simple inline markup (em / strong / a) still renders.
+				attrs.caption
+					? el( 'figcaption', {}, el( RawHTML, {}, safeHTML( attrs.caption ) ) )
 					: null
 			)
 		);

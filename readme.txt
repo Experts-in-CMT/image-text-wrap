@@ -4,7 +4,7 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ You get real control over the wrap instead of the all-or-nothing float the core 
 * **Bounding box wrap** flows text around the image's box, with independent gaps for the text side, above, and below, like a page-layout program's box wrap.
 * **Contour wrap** flows text along a circle or ellipse enclosing the image and its caption, with a single **contour offset** controlling the standoff (the gap above the image is limited by the vertical offset).
 * **Top & bottom** mode drops the image into its own band with text above and below only.
-* **Captions** are written right under the image in the editor canvas, with the body text wrapping around image and caption together. They support bold, italics, and links, and the standard WordPress Typography panel (font size, line height, appearance, letter spacing, letter case, decoration) styles the caption text.
+* **Captions** appear below the image, edited from the sidebar, with the body text wrapping around image and caption together. They accept simple inline HTML (em, strong, links), and the standard WordPress Typography panel (font size, line height, appearance, letter spacing, letter case, decoration) styles the caption text.
 
 The block saves as plain HTML with inline styles, so published posts keep rendering even across editor updates. There is no build step and no external dependencies.
 
@@ -58,6 +58,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 2. The Text Wrap panel: wrap type, position, wrap around (bounding box, contour circle, contour ellipse), vertical offset, contour offset or per-side gaps, and display width.
 
 == Changelog ==
+
+= 1.3.3 =
+* Restored the Caption field in the block sidebar, removed by mistake in 1.3.1, and removed the in-canvas caption editing that replaced it. The caption in the canvas is a display-only preview again, now sanitized (scripts and event attributes stripped) so the 1.3.1 hardening is preserved.
 
 = 1.3.2 =
 * Blocks using the silhouette contour wrap removed in 1.2.0 (shape-outside from the image's alpha channel) now validate and migrate instead of showing "unexpected or invalid content": deprecated save formats for 1.0.0 and 1.1.x now include the contour branch, and those blocks convert to the enclosing ellipse contour, the closest modern equivalent.
