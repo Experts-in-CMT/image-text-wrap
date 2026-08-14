@@ -4,7 +4,7 @@ Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -59,6 +59,9 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 
 == Changelog ==
 
+= 1.3.4 =
+* Documentation only: brought the Upgrade Notice section in line with 1.3.3 (the 1.3.1 notice no longer advertises the reverted in-canvas caption editing) and added notices for 1.3.2 and 1.3.3. No code changes.
+
 = 1.3.3 =
 * Restored the Caption field in the block sidebar, removed by mistake in 1.3.1, and removed the in-canvas caption editing that replaced it. The caption in the canvas is a display-only preview again, now sanitized (scripts and event attributes stripped) so the 1.3.1 hardening is preserved.
 
@@ -107,8 +110,17 @@ No. The block is authored in plain JavaScript against the WordPress editor APIs,
 
 == Upgrade Notice ==
 
+= 1.3.4 =
+Documentation cleanup only; no functional changes.
+
+= 1.3.3 =
+Restores the Caption field to the block sidebar and keeps the security hardening from 1.3.1. Update recommended for all users.
+
+= 1.3.2 =
+Rescues blocks that used the silhouette contour wrap removed in 1.2.0; they now validate and migrate to the ellipse contour instead of showing a block error.
+
 = 1.3.1 =
-Adds deprecated save formats so posts published under any earlier version upgrade without block errors, moves caption editing into the canvas, and hardens the caption and wrap styles against KSES stripping. Update recommended for all users.
+Adds deprecated save formats so posts published under any earlier version upgrade without block errors, and hardens the caption and wrap styles against KSES stripping. Update recommended for all users.
 
 = 1.3.0 =
 Reworks wrapping into Bounding box and Contour modes with proper per-side and contour offset controls, and fixes shapes being ignored with offsets or captions. Re-save existing Image Text Wrap blocks to pick up the corrected wrap.
