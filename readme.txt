@@ -2,7 +2,7 @@
 Contributors: cmtkennyb
 Tags: image, text wrap, float, wrap text, block
 Requires at least: 6.4
-Tested up to: 7.0
+Tested up to: 7.2
 Requires PHP: 7.4
 Stable tag: 1.3.4
 License: GPLv2 or later
